@@ -32,9 +32,9 @@ def draw_graph(graph, position, title = "", labels = None, partition_of_node = N
         nodes_of_partition[partition_of_node[node]].append(node)
 
     for partition in nodes_of_partition:
-        color_secret = partition + 3
+        color_secret = partition + 2
         color = [color_secret, color_secret * color_secret, color_secret * color_secret * color_secret]
-        color = [(i % 5) / 10.0 for i in color]
+        color = "#" + "0".join([str(i % 10) for i in color]) + "0"
         nx.draw_networkx_nodes(graph, position, nodes_of_partition[partition], 2000, color, alpha = 0.8)
     nx.draw_networkx_edges(graph, position, alpha = 0.5)
     nx.draw_networkx_labels(graph, position, labels, font_size = 5, font_color = [1, 1, 1])
@@ -54,5 +54,19 @@ if __name__ == '__main__':
     # position = nx.spring_layout(graph)
     position = nx.circular_layout(graph)
     draw_graph(graph, position, "@" + user_name, users)
+    plt.axis("off")
+    # plt.savefig(user_name + ".png")
     plt.show()
+
+    kClusters = 2
+    clusterers = {
+        "Agglomerative": cluster.AgglomerativeClustering(linkage="ward"),
+        "Spectral": cluster.SpectralClustering(n_clusters=kClusters, affinity="precomputed", n_init=200),
+        "KMeans": cluster.KMeans(n_clusters=kClusters, n_init=200),
+    }
+    for (clusterer_name, clusterer) in clusterers.items():
+        clusterer.fit([[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))])
+        draw_graph(graph, position, "@" + user_name + ": " + clusterer_name, users, dict((graph.nodes()[i], clusterer.labels_[i]) for i in range(len(graph.nodes()))))
+        plt.axis("off")
+        plt.show()
 
