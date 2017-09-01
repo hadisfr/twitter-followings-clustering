@@ -5,3 +5,4 @@ __pycache__
 *.sublime-workspace
 *.json
 *.png
+*.orig
