@@ -43,6 +43,7 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
         for following in user_followings:
             if following in stage:
                 followings[user].append(following)
+        time.sleep(sleep_duration_seconds)
     print("\r\t                                       \rstage size: %d\n" % (len(stage)), file = sys.stderr)
 
     print("final check...", file = sys.stderr)
@@ -52,7 +53,6 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
         print("\r\tproccessing %d of %d (%.2f%%)..." % (index, len(stage), index / len(stage) * 100), end = "", file = sys.stderr)
         if user not in followings.keys():
             followings[user] = []
-        time.sleep(sleep_time)
 
     print("\r\t                                       \rcollecting data completed. stage size: %d\n" % (len(stage)), file = sys.stderr)
 
