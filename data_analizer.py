@@ -21,7 +21,7 @@ def convert_dict_to_grpah(dictionary):
 
 
 def draw_graph(graph, position, title = "", labels = None, partition_of_node = None):
-    if not labels:
+    if labels == "auto":
         labels = dict((i, i) for i in graph.nodes())
     if not partition_of_node:
         partition_of_node = dict((i, 0) for i in graph.nodes())
@@ -32,12 +32,17 @@ def draw_graph(graph, position, title = "", labels = None, partition_of_node = N
         nodes_of_partition[partition_of_node[node]].append(node)
 
     for partition in nodes_of_partition:
-        color_secret = partition + 2
-        color = [color_secret, color_secret * color_secret, color_secret * color_secret * color_secret]
-        color = "#" + "0".join([str(i % 10) for i in color]) + "0"
-        nx.draw_networkx_nodes(graph, position, nodes_of_partition[partition], 200, color, alpha = 0.8)
-    nx.draw_networkx_edges(graph, position, alpha = 0.5)
-    nx.draw_networkx_labels(graph, position, labels, font_size = 5, font_color = [1, 1, 1])
+        color_array = ["00BFFF", "B22222", "FF1493", "800080", "000080", "ADFF2F", "228B22", "C0C0C0", "556B2F", "FF4500", "FFFF00"]
+        if partition < len(color_array):
+            color = "#" + color_array[partition]
+        else:
+            color_secret = partition + 2
+            color = [color_secret, color_secret * color_secret, color_secret * color_secret * color_secret]
+            color = "#" + "0".join([str(hex(i % 14)[-1]) for i in color]) + "0"
+        nx.draw_networkx_nodes(graph, position, nodes_of_partition[partition], 100, color, alpha = 0.8)
+    nx.draw_networkx_edges(graph, position, alpha = 0.5, edge_color = "#808080")
+    if labels:
+        nx.draw_networkx_labels(graph, position, labels, font_size = 5, font_color = [0, 0, 0])
     if title:
         plt.title(title)
 
@@ -50,13 +55,12 @@ if __name__ == '__main__':
     graph = convert_dict_to_grpah(followings)
 
     position = nx.spring_layout(graph)
-    # position = nx.circular_layout(graph)
     draw_graph(graph, position, "@" + user_name, users)
     plt.axis("off")
     plt.savefig(user_name + ".png")
     plt.show()
 
-    kClusters = 2
+    kClusters = 9
     clusters = defaultdict(list)
     clusterers = {
         "Agglomerative": cluster.AgglomerativeClustering(linkage="ward"),
