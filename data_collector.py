@@ -9,7 +9,7 @@ import time
 
 
 from keys import *
-sleep_duration_seconds = 55 # second
+sleep_duration_seconds = 60 # second
 
 
 def collect_followings_relations(starting_user_id, max_level, tweepy_api):
@@ -25,10 +25,16 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
             index += 1
             print("\r\tproccessing %d of %d (%.2f%%)..." % (index, len(last_stage), index / len(last_stage) * 100), end = "", file = sys.stderr)
             sys.stderr.flush()
-            user_followings = tweepy_api.friends_ids(user)
+            while True:
+                try:
+                    user_followings = tweepy_api.friends_ids(user)
+                except Exception as ex:
+                    print("\r%r" % (ex), file = sys.stderr)
+                    time.sleep(sleep_duration_seconds)
+                    continue
+                break
             followings[user] = user_followings
             new_stage = new_stage.union(set(user_followings))
-            time.sleep(sleep_duration_seconds)
         stage = stage.union(last_stage)
         last_stage = new_stage.difference(stage)
         print("\r\t                                       \rstage size: %d\n" % (len(stage)), file = sys.stderr)
@@ -39,11 +45,17 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
     for user in last_stage:
         index += 1
         print("\r\tproccessing %d of %d (%.2f%%)..." % (index, len(last_stage), index / len(last_stage) * 100), end = "", file = sys.stderr)
-        user_followings = tweepy_api.friends_ids(user)
+        while True:
+            try:
+                user_followings = tweepy_api.friends_ids(user)
+            except Exception as ex:
+                print("\r%r" % (ex), file = sys.stderr)
+                time.sleep(sleep_duration_seconds)
+                continue
+            break
         for following in user_followings:
             if following in stage:
                 followings[user].append(following)
-        time.sleep(sleep_duration_seconds)
     print("\r\t                                       \rstage size: %d\n" % (len(stage)), file = sys.stderr)
 
     print("final check...", file = sys.stderr)
