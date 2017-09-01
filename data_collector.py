@@ -9,7 +9,8 @@ import time
 
 
 from keys import *
-sleep_duration_seconds = 60 # second
+sleep_duration_seconds = 62 * 2.5 # second
+rate_limit_exceeded = 88
 levels = 1
 user_name = ""
 
@@ -27,13 +28,20 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
             index += 1
             print("\r\tproccessing %d of %d (%.2f%%)..." % (index, len(last_stage), index / len(last_stage) * 100), end = "", file = sys.stderr)
             sys.stderr.flush()
+            user_followings = []
             while True:
                 try:
                     user_followings = tweepy_api.friends_ids(user)
+                except tweepy.error.TweepError as ex:
+                    print("\r%r" % (ex), file = sys.stderr)
+                    if ex.api_code == rate_limit_exceeded:
+                        time.sleep(sleep_duration_seconds)
+                        continue
+                    else:
+                        pass
                 except Exception as ex:
                     print("\r%r" % (ex), file = sys.stderr)
-                    time.sleep(sleep_duration_seconds)
-                    continue
+                    pass
                 break
             followings[user] = user_followings
             new_stage = new_stage.union(set(user_followings))
@@ -47,13 +55,20 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
     for user in last_stage:
         index += 1
         print("\r\tproccessing %d of %d (%.2f%%)..." % (index, len(last_stage), index / len(last_stage) * 100), end = "", file = sys.stderr)
+        user_followings = []
         while True:
             try:
                 user_followings = tweepy_api.friends_ids(user)
+            except tweepy.error.TweepError as ex:
+                print("\r%r" % (ex), file = sys.stderr)
+                if ex.api_code == rate_limit_exceeded:
+                    time.sleep(sleep_duration_seconds)
+                    continue
+                else:
+                    pass
             except Exception as ex:
                 print("\r%r" % (ex), file = sys.stderr)
-                time.sleep(sleep_duration_seconds)
-                continue
+                pass
             break
         for following in user_followings:
             if following in stage:
