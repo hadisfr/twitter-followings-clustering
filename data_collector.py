@@ -10,6 +10,8 @@ import time
 
 from keys import *
 sleep_duration_seconds = 60 # second
+levels = 1
+user_name = ""
 
 
 def collect_followings_relations(starting_user_id, max_level, tweepy_api):
@@ -84,10 +86,13 @@ if __name__ == '__main__':
     auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth, wait_on_rate_limit = True)
 
-    user = api.me()
+    if user_name:
+        user = api.get_user(user_name)
+    else:
+        user = api.me()
 
     print("@%s (%s) :\t%d following(s)\n" % (user.screen_name, user.name, user.friends_count), file = sys.stderr)
-    (followings, ids) = collect_followings_relations(user.id, 1, api)
+    (followings, ids) = collect_followings_relations(user.id, levels, api)
     users = dict((id, api.get_user(id).screen_name) for id in ids)
     
     print(json.dumps((user.screen_name, users, followings)))
