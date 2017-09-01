@@ -5,9 +5,11 @@ from collections import defaultdict
 import tweepy
 import json
 import sys
+import time
 
 
 from keys import *
+sleep_duration_seconds = 55 # second
 
 
 def collect_followings_relations(starting_user_id, max_level, tweepy_api):
@@ -26,6 +28,7 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
             user_followings = tweepy_api.friends_ids(user)
             followings[user] = user_followings
             new_stage = new_stage.union(set(user_followings))
+            time.sleep(sleep_duration_seconds)
         stage = stage.union(last_stage)
         last_stage = new_stage.difference(stage)
         print("\r\t                                       \rstage size: %d\n" % (len(stage)), file = sys.stderr)
@@ -49,6 +52,7 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
         print("\r\tproccessing %d of %d (%.2f%%)..." % (index, len(stage), index / len(stage) * 100), end = "", file = sys.stderr)
         if user not in followings.keys():
             followings[user] = []
+        time.sleep(sleep_time)
 
     print("\r\t                                       \rcollecting data completed. stage size: %d\n" % (len(stage)), file = sys.stderr)
 
