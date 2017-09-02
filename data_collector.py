@@ -12,7 +12,7 @@ from keys import *
 levels = 1
 user_name = ""
 max_followings_filter = None
-clear_string = "\r                                                                     \r"
+clear_string = "\r                                                                              \r"
 sleep_duration_seconds = 62 * 2.5 # second
 rate_limit_exceeded = 88
 
