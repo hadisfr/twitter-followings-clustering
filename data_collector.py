@@ -33,14 +33,14 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
                 try:
                     user_followings = tweepy_api.friends_ids(user)
                 except tweepy.error.TweepError as ex:
-                    print("\r%r" % (ex), file = sys.stderr)
+                    print("\n%r" % (ex), file = sys.stderr)
                     if ex.api_code == rate_limit_exceeded:
                         time.sleep(sleep_duration_seconds)
                         continue
                     else:
                         pass
                 except Exception as ex:
-                    print("\r%r" % (ex), file = sys.stderr)
+                    print("\n%r" % (ex), file = sys.stderr)
                     pass
                 break
             followings[user] = user_followings
@@ -60,14 +60,14 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
             try:
                 user_followings = tweepy_api.friends_ids(user)
             except tweepy.error.TweepError as ex:
-                print("\r%r" % (ex), file = sys.stderr)
+                print("\n%r" % (ex), file = sys.stderr)
                 if ex.api_code == rate_limit_exceeded:
                     time.sleep(sleep_duration_seconds)
                     continue
                 else:
                     pass
             except Exception as ex:
-                print("\r%r" % (ex), file = sys.stderr)
+                print("\n%r" % (ex), file = sys.stderr)
                 pass
             break
         for following in user_followings:
