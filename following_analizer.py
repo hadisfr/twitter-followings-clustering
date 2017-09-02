@@ -5,7 +5,7 @@ import sys
 from collections import defaultdict
 
 if __name__ == '__main__':
-    (followings_file_address, clusters_file_address) = tuple(input().split(" "))
+    (followings_file_address, clusters_file_address, clustering_methode) = tuple(input().split(" "))
 
     with open(followings_file_address) as file:
         (user_names, followings) = json.loads(file.read())
@@ -13,7 +13,7 @@ if __name__ == '__main__':
     user_ids = dict((value, int(key)) for (key, value) in user_names.items())
     followings = dict((int(key), value) for (key, value) in followings.items())
     with open(clusters_file_address) as file:
-        (clusers) = json.loads(file.read())["Spectral"]
+        (clusers) = json.loads(file.read())[clustering_methode]
 
     sum = 0
     for (user_id, followings_number) in followings.items():
@@ -33,5 +33,6 @@ if __name__ == '__main__':
     cats = defaultdict(list)
     for (user_id, followings_number) in followings.items():
         cats[int(followings_number / cat_length)].append(user_names[user_id])
+
     print(json.dumps(dict((key, len(cats[key])) for key in sorted(cats, reverse = True)), indent = 4))
 
