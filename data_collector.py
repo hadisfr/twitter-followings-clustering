@@ -12,7 +12,8 @@ from keys import *
 levels = 1
 user_name = ""
 max_followings_filter = None
-clear_string = "\r                                                                              \r"
+last_level_max_followings_filter = False
+clear_string = "                                        \r"
 sleep_duration_seconds = 62 * 2.5 # second
 rate_limit_exceeded = 88
 
@@ -34,16 +35,12 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
             while True:
                 try:
                     user_followings = tweepy_api.friends_ids(user)
-                except tweepy.error.TweepError as ex:
+                except tweepy.error.RateLimitError as ex:
                     print("\n%r" % (ex), file = sys.stderr)
-                    if ex.api_code == rate_limit_exceeded:
-                        time.sleep(sleep_duration_seconds)
-                        continue
-                    else:
-                        pass
+                    time.sleep(sleep_duration_seconds)
+                    continue
                 except Exception as ex:
                     print("\n%r" % (ex), file = sys.stderr)
-                    pass
                 break
             permitted_user_followings = []
             if not max_followings_filter:
@@ -58,14 +55,14 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
                     try:
                         followings_number = tweepy_api.get_user(following).friends_count
                     except Exception as ex:
-                        pass
+                        print("\n%r" % (ex), file = sys.stderr)
                     if followings_number < max_followings_filter:
                         followings[user].append(following)
                         permitted_user_followings.append(following)
             new_stage = new_stage.union(set(permitted_user_followings))
         stage = stage.union(last_stage)
         last_stage = new_stage.difference(stage)
-        print(clear_string + "stage size: %d\n" % (len(stage)), file = sys.stderr)
+        print(("\rstage size: %d" + clear_string + "\n") % (len(stage)), file = sys.stderr)
 
     stage = stage.union(last_stage)
     print("level %d (%d users)" % (max_level, len(last_stage)), file = sys.stderr)
@@ -77,13 +74,10 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
         while True:
             try:
                 user_followings = tweepy_api.friends_ids(user)
-            except tweepy.error.TweepError as ex:
+            except tweepy.error.RateLimitError as ex:
                 print("\n%r" % (ex), file = sys.stderr)
-                if ex.api_code == rate_limit_exceeded:
-                    time.sleep(sleep_duration_seconds)
-                    continue
-                else:
-                    pass
+                time.sleep(sleep_duration_seconds)
+                continue
             except Exception as ex:
                 print("\n%r" % (ex), file = sys.stderr)
             break
@@ -92,17 +86,17 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
             follwing_index += 1
             print("\r\tproccessing %d of %d (%.2f%%): following %d of %d (%.2f%%)..." % (index, len(last_stage), index / len(last_stage) * 100, follwing_index, len(user_followings), follwing_index / len(user_followings) * 100), end = "", file = sys.stderr)
             if following in stage:
-                if not max_followings_filter:
+                if not last_level_max_followings_filter and not max_followings_filter:
                     followings[user].append(following)
                 else:
                     followings_number = max_followings_filter
                     try:
                         followings_number = tweepy_api.get_user(following).friends_count
                     except Exception as ex:
-                        pass
+                        print("\n%r" % (ex), file = sys.stderr)
                     if followings_number < max_followings_filter:
                         followings[user].append(following)
-    print(clear_string + "stage size: %d\n" % (len(stage)), file = sys.stderr)
+    print(("\rstage size: %d\n" + clear_string +"\n") % (len(stage)), file = sys.stderr)
 
     print("final check...", file = sys.stderr)
     index = 0
@@ -112,7 +106,7 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
         if user not in followings.keys():
             followings[user] = []
 
-    print(clear_string + "collecting data completed. stage size: %d\n" % (len(stage)), file = sys.stderr)
+    print(("\rcollecting data completed. stage size: %d" + clear_string + "\n") % (len(stage)), file = sys.stderr)
 
     return (followings, stage)
 
