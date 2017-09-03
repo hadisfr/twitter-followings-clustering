@@ -59,19 +59,20 @@ if __name__ == '__main__':
     position = nx.spring_layout(graph)
     draw_graph(graph, position, "@" + user_name, users)
     plt.axis("off")
-    plt.savefig(user_name + ".png")
+    # plt.savefig(user_name + ".png")
     plt.show()
 
-    kClusters = 9
+    kClusters = 5
     clusters = defaultdict(list)
     clusterers = {
-        "Agglomerative": cluster.AgglomerativeClustering(linkage="ward"),
-        "k-Agglomerative": cluster.AgglomerativeClustering(linkage="ward", n_clusters=kClusters),
+        "Agglomerative": cluster.AgglomerativeClustering(linkage="ward", n_clusters=kClusters),
         "Spectral": cluster.SpectralClustering(n_clusters=kClusters, affinity="precomputed", n_init=200),
         "KMeans": cluster.KMeans(n_clusters=kClusters, n_init=200),
         "Affinity": cluster.affinity_propagation(S=[[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))], max_iter=200, damping=0.6)
     }
     for (clusterer_name, clusterer) in clusterers.items():
+        if clusterer_name != "Spectral":
+            continue
         if clusterer_name == "Affinity":
             clustering_result = clusterer[1]
         else:
