@@ -11,7 +11,7 @@ import time
 from keys import *
 from data_collector_config import *
 
-clear_string = "                                        \r"
+clear_string = "          "
 sleep_duration_seconds = 62 * 2.5 # second
 
 
@@ -26,7 +26,7 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
         index = 0
         for user in last_stage:
             index += 1
-            print(("\r\tproccessing %d of %d (%.2f%%)..." + clear_string) % (index, len(last_stage), index / len(last_stage) * 100), end = "", file = sys.stderr)
+            print(("\r\tproccessing %d of %d (%.2f%%)..." + clear_string * 3 + "\r") % (index, len(last_stage), index / len(last_stage) * 100), end = "", file = sys.stderr)
             sys.stderr.flush()
             user_followings = []
             while True:
@@ -59,14 +59,14 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
             new_stage = new_stage.union(set(permitted_user_followings))
         stage = stage.union(last_stage)
         last_stage = new_stage.difference(stage)
-        print(("\rstage size: %d" + clear_string + "\n") % (len(stage)), file = sys.stderr)
+        print(("\rstage size: %d" + clear_string * 6 + "\n") % (len(stage)), file = sys.stderr)
 
     stage = stage.union(last_stage)
     print("level %d (%d users)" % (max_level, len(last_stage)), file = sys.stderr)
     index = 0
     for user in last_stage:
         index += 1
-        print(("\r\tproccessing %d of %d (%.2f%%)..." + clear_string) % (index, len(last_stage), index / len(last_stage) * 100), end = "", file = sys.stderr)
+        print(("\r\tproccessing %d of %d (%.2f%%)..." + clear_string * 3 + "\r") % (index, len(last_stage), index / len(last_stage) * 100), end = "", file = sys.stderr)
         user_followings = []
         while True:
             try:
@@ -93,7 +93,7 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
                         print("\n%r" % (ex), file = sys.stderr)
                     if followings_number < max_followings_filter:
                         followings[user].append(following)
-    print(("\rstage size: %d\n" + clear_string +"\n") % (len(stage)), file = sys.stderr)
+    print(("\rstage size: %d\n" + clear_string * 6 +"\n") % (len(stage)), file = sys.stderr)
 
     print("final check...", file = sys.stderr)
     index = 0
@@ -103,7 +103,7 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
         if user not in followings.keys():
             followings[user] = []
 
-    print(("\rcollecting data completed. stage size: %d" + clear_string + "\n") % (len(stage)), file = sys.stderr)
+    print(("\rcollecting data completed. stage size: %d" + clear_string * 4 + "\n") % (len(stage)), file = sys.stderr)
 
     return (followings, stage)
 
