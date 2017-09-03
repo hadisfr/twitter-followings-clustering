@@ -9,13 +9,10 @@ import time
 
 
 from keys import *
-levels = 1
-user_name = ""
-max_followings_filter = None
-last_level_max_followings_filter = False
+from data_collector_config import *
+
 clear_string = "                                        \r"
 sleep_duration_seconds = 62 * 2.5 # second
-rate_limit_exceeded = 88
 
 
 def collect_followings_relations(starting_user_id, max_level, tweepy_api):
