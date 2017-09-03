@@ -54,6 +54,8 @@ if __name__ == '__main__':
 
     graph = convert_dict_to_grpah(followings)
 
+    # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent = 4))
+
     position = nx.spring_layout(graph)
     draw_graph(graph, position, "@" + user_name, users)
     plt.axis("off")
