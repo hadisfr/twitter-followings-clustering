@@ -32,7 +32,7 @@ if __name__ == '__main__':
     cat_length = 100
     cats = defaultdict(list)
     for (user_id, followings_number) in followings.items():
-        cats[int(followings_number / cat_length)].append(user_names[user_id])
+        cats[int(followings_number / cat_length) * cat_length].append(user_names[user_id])
 
     print(json.dumps(dict((key, len(cats[key])) for key in sorted(cats, reverse = True)), indent = 4))
 
