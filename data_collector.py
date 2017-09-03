@@ -83,16 +83,7 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
             follwing_index += 1
             print("\r\tproccessing %d of %d (%.2f%%): following %d of %d (%.2f%%)..." % (index, len(last_stage), index / len(last_stage) * 100, follwing_index, len(user_followings), follwing_index / len(user_followings) * 100), end = "", file = sys.stderr)
             if following in stage:
-                if not last_level_max_followings_filter and not max_followings_filter:
-                    followings[user].append(following)
-                else:
-                    followings_number = max_followings_filter
-                    try:
-                        followings_number = tweepy_api.get_user(following).friends_count
-                    except Exception as ex:
-                        print("\n%r" % (ex), file = sys.stderr)
-                    if followings_number < max_followings_filter:
-                        followings[user].append(following)
+                followings[user].append(following)
     print(("\rstage size: %d\n" + clear_string * 6 +"\n") % (len(stage)), file = sys.stderr)
 
     print("final check...", file = sys.stderr)
