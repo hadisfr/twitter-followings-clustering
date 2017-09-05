@@ -10,15 +10,9 @@ from sklearn import cluster
 
 from data_collector import translate_followings_db_ids_to_names
 
-def sort_dict_by_values(dictionary, reverse = False):
-    dictionary = dict((value, key) for (key, value) in dictionary.items())
-    dictionary = dict((key, dictionary[key]) for key in sorted(dictionary, reverse = reverse))
-    dictionary = dict((value, key) for (key, value) in dictionary.items())
-    return dictionary
-
 
 def translate_keys_from_ids_to_names(dictionary, users, reverse = False):
-    return dict((users[user_id], dictionary[user_id]) for user_id in sort_dict_by_values(dictionary, reverse))
+    return dict((users[user_id], dictionary[user_id]) for user_id in sorted(dictionary, key = dictionary.get, reverse = reverse))
 
 
 def convert_dict_to_grpah(dictionary):
