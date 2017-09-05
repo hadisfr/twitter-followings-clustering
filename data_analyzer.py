@@ -21,6 +21,9 @@ def convert_dict_to_grpah(dictionary):
 
 
 def draw_graph(graph, position, title = "", labels = None, partition_of_node = None):
+    plt.figure()
+    plt.axis("off")
+
     if labels == "auto":
         labels = dict((i, i) for i in graph.nodes())
     if not partition_of_node:
@@ -47,22 +50,7 @@ def draw_graph(graph, position, title = "", labels = None, partition_of_node = N
         plt.title(title)
 
 
-if __name__ == '__main__':
-    (user_name, users, followings) = json.loads(input())
-    users = dict((int(key), users[key]) for key in users.keys())
-    followings = dict((int(key), followings[key]) for key in followings.keys())
-
-    graph = convert_dict_to_grpah(followings)
-
-    # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent = 4))
-
-    position = nx.spring_layout(graph)
-    draw_graph(graph, position, "@" + user_name, users)
-    plt.axis("off")
-    # plt.savefig(user_name + ".png")
-    plt.show()
-
-    kClusters = 5
+def cluster_grpah(graph, kClusters = 2, algorithm_name = None, show_visualized = True):
     clusters = defaultdict(list)
     clusterers = {
         "Agglomerative": cluster.AgglomerativeClustering(linkage="ward", n_clusters=kClusters),
@@ -71,18 +59,34 @@ if __name__ == '__main__':
         "Affinity": cluster.affinity_propagation(S=[[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))], max_iter=200, damping=0.6)
     }
     for (clusterer_name, clusterer) in clusterers.items():
-        if clusterer_name != "Spectral":
+        if algorithm_name and clusterer_name != algorithm_name:
             continue
         if clusterer_name == "Affinity":
             clustering_result = clusterer[1]
         else:
             clusterer.fit([[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))])
             clustering_result = clusterer.labels_
-        draw_graph(graph, position, "@" + user_name + ": " + clusterer_name, users, dict((graph.nodes()[i], clustering_result[i]) for i in range(len(graph.nodes()))))
         clusters[clusterer_name] = [[users[graph.nodes()[i]] for i in range(len(clustering_result)) if clustering_result[i] == j] for j in range(len(set(clustering_result)))]
-        plt.axis("off")
-        plt.show()
-    
+        if show_visualized:
+            draw_graph(graph, position, "@%s : %s" % (user_name, clusterer_name) + [" (%d)" % kClusters, ""][clusterer_name == "Affinity"], users, dict((graph.nodes()[i], clustering_result[i]) for i in range(len(graph.nodes()))))
+            plt.show()
+    return clusters
+
+
+if __name__ == '__main__':
+    (user_name, users, followings) = json.loads(input())
+    users = dict((int(key), users[key]) for key in users.keys())
+    followings = dict((int(key), followings[key]) for key in followings.keys())
+    graph = convert_dict_to_grpah(followings)
+    position = nx.spring_layout(graph)
+
+    # draw_graph(graph, position, "@" + user_name, users)
+    # plt.savefig(user_name + ".png")
+    plt.show()
+
+    clusters = cluster_grpah(graph, 7, "Spectral", True)
+
+    # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent = 4))
     print(json.dumps(clusters, indent = 4))
     
 
