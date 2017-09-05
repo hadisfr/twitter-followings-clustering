@@ -86,8 +86,8 @@ def cluster_grpah(graph, kClusters = 2, methode_name = None, show_visualized = T
 def extract_importanat_users(graph, users, reverse = False, methode_name = None):
     important_users_extractors = {
         "deggree": lambda g: nx.degree_centrality(g),
-        "closeness": lambda g: nx.closeness_centrality(g),
-        "reverse_closeness": lambda g: nx.closeness_centrality(g.reverse(copy = True)),
+        "closeness": lambda g: nx.closeness_centrality(g), # indicates that the user listens to how many users' tweets immediatey
+        "reverse_closeness": lambda g: nx.closeness_centrality(g.reverse(copy = True)), # indicates that how many users immediatey listen the user's tweets
         "betweenness": lambda g: nx.betweenness_centrality(g)
     }
     important_users = {}
