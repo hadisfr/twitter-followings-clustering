@@ -10,6 +10,16 @@ from sklearn import cluster
 
 from data_collector import translate_followings_db_ids_to_names
 
+def sort_dict_by_values(dictionary, reverse = False):
+    dictionary = dict((value, key) for (key, value) in dictionary.items())
+    dictionary = dict((key, dictionary[key]) for key in sorted(dictionary, reverse = reverse))
+    dictionary = dict((value, key) for (key, value) in dictionary.items())
+    return dictionary
+
+
+def translate_keys_from_ids_to_names(dictionary, users):
+    return dict((users[user_id], dictionary[user_id]) for user_id in sort_dict_by_values(dictionary))
+
 
 def convert_dict_to_grpah(dictionary):
     graph = nx.DiGraph()
@@ -50,7 +60,7 @@ def draw_graph(graph, position, title = "", labels = None, partition_of_node = N
         plt.title(title)
 
 
-def cluster_grpah(graph, kClusters = 2, algorithm_name = None, show_visualized = True):
+def cluster_grpah(graph, kClusters = 2, methode_name = None, show_visualized = True):
     clusters = defaultdict(list)
     clusterers = {
         "Agglomerative": cluster.AgglomerativeClustering(linkage="ward", n_clusters=kClusters),
@@ -59,7 +69,7 @@ def cluster_grpah(graph, kClusters = 2, algorithm_name = None, show_visualized =
         "Affinity": cluster.affinity_propagation(S=[[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))], max_iter=200, damping=0.6)
     }
     for (clusterer_name, clusterer) in clusterers.items():
-        if algorithm_name and clusterer_name != algorithm_name:
+        if methode_name and clusterer_name != methode_name:
             continue
         if clusterer_name == "Affinity":
             clustering_result = clusterer[1]
@@ -71,6 +81,21 @@ def cluster_grpah(graph, kClusters = 2, algorithm_name = None, show_visualized =
             draw_graph(graph, position, "@%s : %s" % (user_name, clusterer_name) + [" (%d)" % kClusters, ""][clusterer_name == "Affinity"], users, dict((graph.nodes()[i], clustering_result[i]) for i in range(len(graph.nodes()))))
             plt.show()
     return clusters
+
+
+def extract_importanat_users(graph, users, methode_name = None):
+    important_users_extractors = {
+        "deggree": lambda g: nx.degree_centrality(g),
+        "closeness": lambda g: nx.closeness_centrality(g),
+        "reverse_closeness": lambda g: nx.closeness_centrality(g.reverse(copy = True)),
+        "betweenness": lambda g: nx.betweenness_centrality(g)
+    }
+    important_users = {}
+    for important_users_extractor in important_users_extractors:
+        if methode_name and important_users_extractor != methode_name:
+            continue
+        important_users[important_users_extractor] = translate_keys_from_ids_to_names(important_users_extractors[important_users_extractor](graph), users)
+    return important_users
 
 
 if __name__ == '__main__':
@@ -85,8 +110,9 @@ if __name__ == '__main__':
     plt.show()
 
     clusters = cluster_grpah(graph, 7, "Spectral", True)
+    important_users = extract_importanat_users(graph, users)
 
     # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent = 4))
-    print(json.dumps(clusters, indent = 4))
+    print(json.dumps((clusters, important_users), indent = 4))
     
 

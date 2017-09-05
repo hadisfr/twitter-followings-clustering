@@ -13,7 +13,7 @@ if __name__ == '__main__':
     user_ids = dict((value, int(key)) for (key, value) in user_names.items())
     followings = dict((int(key), value) for (key, value) in followings.items())
     with open(clusters_file_address) as file:
-        (clusters) = json.loads(file.read())[clustering_methode]
+        (clusters, ) = json.loads(file.read())[clustering_methode]
 
     sum = 0
     for (user_id, followings_number) in followings.items():
