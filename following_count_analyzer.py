@@ -5,15 +5,15 @@ import sys
 from collections import defaultdict
 
 if __name__ == '__main__':
-    (followings_file_address, clusters_file_address, clustering_methode) = tuple(input().split(" "))
+    (following_count_file_address, data_analyzer_file_address, clustering_methode) = tuple(input().split(" "))
 
-    with open(followings_file_address) as file:
+    with open(following_count_file_address) as file:
         (user_names, followings) = json.loads(file.read())
     user_names = dict((int(key), value) for (key, value) in user_names.items())
     user_ids = dict((value, int(key)) for (key, value) in user_names.items())
     followings = dict((int(key), value) for (key, value) in followings.items())
-    with open(clusters_file_address) as file:
-        (clusters, ) = json.loads(file.read())[clustering_methode]
+    with open(data_analyzer_file_address) as file:
+        clusters = json.loads(file.read())[0][clustering_methode]
 
     sum = 0
     for (user_id, followings_number) in followings.items():

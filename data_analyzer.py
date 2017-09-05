@@ -17,8 +17,8 @@ def sort_dict_by_values(dictionary, reverse = False):
     return dictionary
 
 
-def translate_keys_from_ids_to_names(dictionary, users):
-    return dict((users[user_id], dictionary[user_id]) for user_id in sort_dict_by_values(dictionary))
+def translate_keys_from_ids_to_names(dictionary, users, reverse = False):
+    return dict((users[user_id], dictionary[user_id]) for user_id in sort_dict_by_values(dictionary, reverse))
 
 
 def convert_dict_to_grpah(dictionary):
@@ -83,7 +83,7 @@ def cluster_grpah(graph, kClusters = 2, methode_name = None, show_visualized = T
     return clusters
 
 
-def extract_importanat_users(graph, users, methode_name = None):
+def extract_importanat_users(graph, users, reverse = False, methode_name = None):
     important_users_extractors = {
         "deggree": lambda g: nx.degree_centrality(g),
         "closeness": lambda g: nx.closeness_centrality(g),
@@ -94,7 +94,7 @@ def extract_importanat_users(graph, users, methode_name = None):
     for important_users_extractor in important_users_extractors:
         if methode_name and important_users_extractor != methode_name:
             continue
-        important_users[important_users_extractor] = translate_keys_from_ids_to_names(important_users_extractors[important_users_extractor](graph), users)
+        important_users[important_users_extractor] = translate_keys_from_ids_to_names(important_users_extractors[important_users_extractor](graph), users, reverse)
     return important_users
 
 
@@ -105,12 +105,12 @@ if __name__ == '__main__':
     graph = convert_dict_to_grpah(followings)
     position = nx.spring_layout(graph)
 
-    # draw_graph(graph, position, "@" + user_name, users)
+    draw_graph(graph, position, "@" + user_name, users)
     # plt.savefig(user_name + ".png")
     plt.show()
 
-    clusters = cluster_grpah(graph, 7, "Spectral", True)
-    important_users = extract_importanat_users(graph, users)
+    clusters = cluster_grpah(graph, 9, "Spectral", True)
+    important_users = extract_importanat_users(graph, users, reverse = True)
 
     # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent = 4))
     print(json.dumps((clusters, important_users), indent = 4))
