@@ -5,31 +5,32 @@ import json
 from sys import stderr
 
 
-def print_result(res, db, clusters, with_respect_to_db = False):
-    print("\033[30;107mCluster", end = "\t")
-    for key in db.keys():
-        print("%s" % (key) + ["\t", ""][len(key) >= 8], end = "\t")
+def print_header_row_content(kwargs):
+    print("%s" % (kwargs["key"]) + ["\t", ""][len(kwargs["key"]) >= 8], end = "\t")
+
+
+def print_nonheader_row_content(kwargs):
+    number = kwargs["numbers"][kwargs["key"]]
+    percentage = number / kwargs["number_all"] * 100
+    print("%s%3d (%6.2f%%)\033[%sm" % (["", "\033[101;97m"][percentage > kwargs["percentage_cutoff"]], number, percentage, ["0", "30;47", "30;107"][kwargs["row_color_code"]]), end = "\t")
+
+
+def print_row(keys, content_printer, row_header = "", **kwargs):
+    print("\033[%sm%3s" % (["0", "30;47", "30;107"][kwargs["row_color_code"]], row_header), end = "\t")
+    for key in keys:
+        kwargs["key"] = key
+        content_printer(kwargs = kwargs)
     print("\033[0;49m")
+
+
+def print_result(res, db, clusters, with_respect_to_db = False, percentage_cutoff = 50):
+    print_row(db.keys(), print_header_row_content, row_color_code = 2)
     for i in range(len(res)):
-        print("\033[%sm%3d" % (["0", "30;47"][i % 2], i), end = "\t")
-        for key in db.keys():
-            number = res[i][key]
-            number_all = [len(clusters[i]), len(db[key])][with_respect_to_db]
-            percentage = number / number_all * 100
-            print("%s%3d (%6.2f%%)\033[%sm" % (["", "\033[101;97m"][percentage > 50], number, percentage, ["0", "30;47"][i % 2]), end = "\t")
-        print("\033[0;49m")
-    print("\033[30;107m", end = "\t")
-    for key in db.keys():
-        number = all[key]
-        number_all = [all_fllowings_count, len(db[key])][with_respect_to_db] 
-        percentage = number / number_all * 100
-        print("%s%3d (%6.2f%%)\033[30;107m" % (["", "\033[101;97m"][percentage > 50], number, percentage), end = "\t")
-    print("\033[0;49m")
+        print_row(keys = db.keys(), numbers = res[i], number_all = [len(clusters[i]), len(db[key])][with_respect_to_db], row_color_code = i % 2, percentage_cutoff = percentage_cutoff, row_header = i, content_printer = print_nonheader_row_content)
+    print_row(keys = db.keys(), numbers = all, number_all = [all_fllowings_count, len(db[key])][with_respect_to_db], row_color_code = 2, percentage_cutoff = percentage_cutoff, content_printer = print_nonheader_row_content)
 
 
-if __name__ == '__main__':
-    (relations_file_name, clusers_file_name, db_file_name, cluster_name) = tuple(input().split(" "))
-
+def read_all_jsons(relations_file_name, clusers_file_name, db_file_name, cluster_name):
     with open(clusers_file_name) as f:
         clusters = json.loads(f.read())[0][cluster_name]
     with open(db_file_name) as f:
@@ -37,6 +38,12 @@ if __name__ == '__main__':
     with open(relations_file_name) as f:
         user_names = json.loads(f.read())[1]
     user_ids = dict((value, key) for (key, value) in user_names.items())
+
+    return (user_names, user_ids, clusters, db)
+
+
+if __name__ == '__main__':
+    (user_names, user_ids, clusters, db) = read_all_jsons(*tuple(input().split(" ")))
 
     res = []
     all = dict((key, 0) for key in db.keys())
