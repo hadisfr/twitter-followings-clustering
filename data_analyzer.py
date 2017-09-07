@@ -6,9 +6,13 @@ import json
 import sys
 import networkx as nx
 import matplotlib.pyplot as plt
-from sklearn import cluster
-
+from sklearn import cluster, metrics
 from data_collector import translate_followings_db_ids_to_names
+
+
+clusters_number = 9
+gui = True
+find_clusters_number_mode = False
 
 
 def translate_keys_from_ids_to_names(dictionary, users, reverse = False):
@@ -22,6 +26,16 @@ def convert_dict_to_grpah(dictionary):
         for j in dictionary[i]:
             graph.add_edge(i, j)
     return graph
+
+
+def get_color_code(color_secret):
+    color_array = ["B22222", "000080", "00BFFF", "FF1493", "800080", "ADFF2F", "228B22", "C0C0C0", "556B2F", "FF4500", "FFFF00"]
+    if color_secret < len(color_array):
+        color = "#" + color_array[color_secret]
+    else:
+        color = [color_secret, color_secret * color_secret, color_secret * color_secret * color_secret]
+        color = "#" + "0".join([str(hex(i % 14)[-1]) for i in color]) + "0"
+    return color
 
 
 def draw_graph(graph, position, title = "", labels = None, partition_of_node = None):
@@ -39,19 +53,22 @@ def draw_graph(graph, position, title = "", labels = None, partition_of_node = N
         nodes_of_partition[partition_of_node[node]].append(node)
 
     for partition in nodes_of_partition:
-        color_array = ["00BFFF", "B22222", "FF1493", "800080", "000080", "ADFF2F", "228B22", "C0C0C0", "556B2F", "FF4500", "FFFF00"]
-        if partition < len(color_array):
-            color = "#" + color_array[partition]
-        else:
-            color_secret = partition + 2
-            color = [color_secret, color_secret * color_secret, color_secret * color_secret * color_secret]
-            color = "#" + "0".join([str(hex(i % 14)[-1]) for i in color]) + "0"
+        color = get_color_code(partition + 2)
         nx.draw_networkx_nodes(graph, position, nodes_of_partition[partition], 100, color, alpha = 0.8)
     nx.draw_networkx_edges(graph, position, alpha = 0.5, edge_color = "#808080")
     if labels:
         nx.draw_networkx_labels(graph, position, labels, font_size = 5, font_color = [0, 0, 0])
     if title:
         plt.title(title)
+
+
+def draw_socres_plot(scores):
+    plt.figure()
+    ax = plt.subplot(1, 1, 1)
+    ax.grid(True)
+    ax.set_xticks([i + 2 for i in range(len(scores))])
+    ax.plot([i + 2 for i in range(len(scores))], scores, marker = "o")
+    plt.show()    
 
 
 def cluster_grpah(graph, kClusters = 2, methode_name = None, show_visualized = True):
@@ -65,16 +82,17 @@ def cluster_grpah(graph, kClusters = 2, methode_name = None, show_visualized = T
     for (clusterer_name, clusterer) in clusterers.items():
         if methode_name and clusterer_name != methode_name:
             continue
+        adjacency_matrix = [[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))]
         if clusterer_name == "Affinity":
             clustering_result = clusterer[1]
         else:
-            clusterer.fit([[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))])
-            clustering_result = clusterer.labels_
+            clustering_result = clusterer.fit_predict(adjacency_matrix)
+        score = metrics.silhouette_score(adjacency_matrix, clustering_result)
         clusters[clusterer_name] = [[users[graph.nodes()[i]] for i in range(len(clustering_result)) if clustering_result[i] == j] for j in range(len(set(clustering_result)))]
         if show_visualized:
             draw_graph(graph, position, "@%s : %s" % (user_name, clusterer_name) + [" (%d)" % kClusters, ""][clusterer_name == "Affinity"], users, dict((graph.nodes()[i], clustering_result[i]) for i in range(len(graph.nodes()))))
             plt.show()
-    return clusters
+    return (clusters, score)
 
 
 def extract_importanat_users(graph, users, reverse = False, methode_name = None):
@@ -99,14 +117,24 @@ if __name__ == '__main__':
     graph = convert_dict_to_grpah(followings)
     position = nx.spring_layout(graph)
 
-    draw_graph(graph, position, "@" + user_name, users)
-    # plt.savefig(user_name + ".png")
-    plt.show()
+    print("@%s" % user_name, file = sys.stderr)
+    if gui:
+        draw_graph(graph, position, "@" + user_name, users)
+        plt.show()
 
-    clusters = cluster_grpah(graph, 9, "Spectral", True)
-    important_users = extract_importanat_users(graph, users, reverse = True)
+    if find_clusters_number_mode:
+        scores = []
+        for k in range(clusters_number - 2):
+            print("k = %d" % (k + 2), end = ",\t", file = sys.stderr)
+            (clusters, score) = cluster_grpah(graph, k + 2, "Agglomerative", False)
+            print("score = %f" % score, file = sys.stderr)
+            scores.append(score)
+        draw_socres_plot(scores)
 
-    # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent = 4))
-    print(json.dumps((clusters, important_users), indent = 4))
+    else:
+        (clusters, score) = cluster_grpah(graph, clusters_number, "Spectral", gui)
+        important_users = extract_importanat_users(graph, users, reverse = True)
+        # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent = 4))
+        print(json.dumps((clusters, important_users), indent = 4))
     
 
