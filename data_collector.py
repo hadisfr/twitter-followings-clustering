@@ -84,7 +84,7 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
             print("\r\tproccessing %d of %d (%.2f%%): following %d of %d (%.2f%%)..." % (index, len(last_stage), index / len(last_stage) * 100, follwing_index, len(user_followings), follwing_index / len(user_followings) * 100), end = "", file = sys.stderr)
             if following in stage:
                 followings[user].append(following)
-    print(("\rstage size: %d\n" + clear_string * 6 +"\n") % (len(stage)), file = sys.stderr)
+    print(("\rstage size: %d" + clear_string * 6 +"\n") % (len(stage)), file = sys.stderr)
 
     print("final check...", file = sys.stderr)
     index = 0
@@ -97,6 +97,17 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
     print(("\rcollecting data completed. stage size: %d" + clear_string * 4 + "\n") % (len(stage)), file = sys.stderr)
 
     return (followings, stage)
+
+
+def user_names_by_id(ids):
+    users = {}
+    for uid in ids:
+        try:
+            users[uid] = api.get_user(uid).screen_name
+        except Exception as ex:
+            print("%d : %r", (uid, ex), file = sys.stderr)
+            users[uid] = str(uid)
+    return users
 
 
 def translate_followings_db_ids_to_names(followings, users):
@@ -119,7 +130,7 @@ if __name__ == '__main__':
 
     print("@%s (%s) :\t%d following(s)\n" % (user.screen_name, user.name, user.friends_count), file = sys.stderr)
     (followings, ids) = collect_followings_relations(user.id, levels, api)
-    users = dict((id, api.get_user(id).screen_name) for id in ids)
+    users = user_names_by_id(ids)
     
     print(json.dumps((user.screen_name, users, followings)))
 
