@@ -10,9 +10,9 @@ from sklearn import cluster, metrics
 from data_collector import translate_followings_db_ids_to_names
 
 
-clusters_number = 16
-gui = False
-find_clusters_number_mode = True
+clusters_number = 11
+gui = True
+find_clusters_number_mode = False
 
 
 def make_adjacency_matrix(graph):
@@ -127,6 +127,8 @@ if __name__ == '__main__':
         position = nx.spring_layout(graph)
         draw_graph(graph, position, "@" + user_name, users)
         plt.show()
+    else:
+        position = None
 
     if find_clusters_number_mode:
         scores = []
