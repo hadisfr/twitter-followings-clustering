@@ -10,7 +10,7 @@ from sklearn import cluster, metrics
 from data_collector import translate_followings_db_ids_to_names
 
 
-clusters_number = 9
+clusters_number = 20
 gui = True
 find_clusters_number_mode = False
 
@@ -71,7 +71,7 @@ def draw_socres_plot(scores):
     plt.show()    
 
 
-def cluster_grpah(graph, kClusters = 2, methode_name = None, show_visualized = True):
+def cluster_grpah(graph, kClusters = 2, position = None, methode_name = None, show_visualized = True):
     clusters = defaultdict(list)
     clusterers = {
         "Agglomerative": cluster.AgglomerativeClustering(linkage="ward", n_clusters=kClusters),
@@ -115,10 +115,10 @@ if __name__ == '__main__':
     users = dict((int(key), users[key]) for key in users.keys())
     followings = dict((int(key), followings[key]) for key in followings.keys())
     graph = convert_dict_to_grpah(followings)
-    position = nx.spring_layout(graph)
 
     print("@%s" % user_name, file = sys.stderr)
     if gui:
+        position = nx.spring_layout(graph)
         draw_graph(graph, position, "@" + user_name, users)
         plt.show()
 
@@ -126,13 +126,15 @@ if __name__ == '__main__':
         scores = []
         for k in range(clusters_number - 2):
             print("k = %d" % (k + 2), end = ",\t", file = sys.stderr)
-            (clusters, score) = cluster_grpah(graph, k + 2, "Agglomerative", False)
+            sys.stderr.flush()
+            (clusters, score) = cluster_grpah(graph, k + 2, methode_name = "Agglomerative", show_visualized = False)
             print("score = %f" % score, file = sys.stderr)
+            sys.stderr.flush()
             scores.append(score)
         draw_socres_plot(scores)
 
     else:
-        (clusters, score) = cluster_grpah(graph, clusters_number, "Spectral", gui)
+        (clusters, score) = cluster_grpah(graph, clusters_number, position, methode_name = "Spectral", show_visualized = gui)
         important_users = extract_importanat_users(graph, users, reverse = True)
         # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent = 4))
         print(json.dumps((clusters, important_users), indent = 4))
