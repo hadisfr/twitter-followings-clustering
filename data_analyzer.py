@@ -11,8 +11,12 @@ from data_collector import translate_followings_db_ids_to_names
 
 
 clusters_number = 16
-gui = True
-find_clusters_number_mode = False
+gui = False
+find_clusters_number_mode = True
+
+
+def make_adjacency_matrix(graph):
+    return [[j in graph.neighbors(i) for j in graph.nodes()] for i in graph.nodes()]
 
 
 def translate_keys_from_ids_to_names(dictionary, users, reverse = False):
@@ -74,7 +78,7 @@ def draw_socres_plot(scores):
 def cluster_grpah(graph, kClusters = 2, position = None, methode_name = None, show_visualized = True, adjacency_matrix = None):
     clusters = defaultdict(list)
     if not adjacency_matrix:
-        adjacency_matrix = [[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))]
+        adjacency_matrix = make_adjacency_matrix(graph)
     clusterers = {
         "Agglomerative": cluster.AgglomerativeClustering(linkage="ward", n_clusters=kClusters),
         "Spectral": cluster.SpectralClustering(n_clusters=kClusters, affinity="precomputed", n_init=200),
@@ -126,7 +130,7 @@ if __name__ == '__main__':
 
     if find_clusters_number_mode:
         scores = []
-        adjacency_matrix = [[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))]
+        adjacency_matrix = make_adjacency_matrix(graph)
         for k in range(clusters_number - 2):
             print("k = %d" % (k + 2), end = ",\t", file = sys.stderr)
             sys.stderr.flush()
