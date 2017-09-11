@@ -10,7 +10,7 @@ from sklearn import cluster, metrics
 from data_collector import translate_followings_db_ids_to_names
 
 
-clusters_number = 20
+clusters_number = 16
 gui = True
 find_clusters_number_mode = False
 
@@ -71,18 +71,20 @@ def draw_socres_plot(scores):
     plt.show()    
 
 
-def cluster_grpah(graph, kClusters = 2, position = None, methode_name = None, show_visualized = True):
+def cluster_grpah(graph, kClusters = 2, position = None, methode_name = None, show_visualized = True, adjacency_matrix = None):
     clusters = defaultdict(list)
+    if not adjacency_matrix:
+        adjacency_matrix = [[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))]
     clusterers = {
         "Agglomerative": cluster.AgglomerativeClustering(linkage="ward", n_clusters=kClusters),
         "Spectral": cluster.SpectralClustering(n_clusters=kClusters, affinity="precomputed", n_init=200),
         "KMeans": cluster.KMeans(n_clusters=kClusters, n_init=200),
-        "Affinity": cluster.affinity_propagation(S=[[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))], max_iter=200, damping=0.6)
+        "Affinity": cluster.affinity_propagation(S=adjacency_matrix, max_iter=200, damping=0.6)
     }
     for (clusterer_name, clusterer) in clusterers.items():
         if methode_name and clusterer_name != methode_name:
             continue
-        adjacency_matrix = [[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))]
+        
         if clusterer_name == "Affinity":
             clustering_result = clusterer[1]
         else:
@@ -124,10 +126,11 @@ if __name__ == '__main__':
 
     if find_clusters_number_mode:
         scores = []
+        adjacency_matrix = [[graph.nodes()[j] in graph.neighbors(graph.nodes()[i]) for j in range(len(graph.nodes()))] for i in range(len(graph.nodes()))]
         for k in range(clusters_number - 2):
             print("k = %d" % (k + 2), end = ",\t", file = sys.stderr)
             sys.stderr.flush()
-            (clusters, score) = cluster_grpah(graph, k + 2, methode_name = "Agglomerative", show_visualized = False)
+            (clusters, score) = cluster_grpah(graph, k + 2, methode_name = "Agglomerative", show_visualized = False, adjacency_matrix = adjacency_matrix)
             print("score = %f" % score, file = sys.stderr)
             sys.stderr.flush()
             scores.append(score)
