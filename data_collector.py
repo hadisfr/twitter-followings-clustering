@@ -105,7 +105,7 @@ def user_names_by_id(ids):
         try:
             users[uid] = api.get_user(uid).screen_name
         except Exception as ex:
-            print("%d : %r", (uid, ex), file = sys.stderr)
+            print("%d : %r" % (uid, ex), file = sys.stderr)
             users[uid] = str(uid)
     return users
 
