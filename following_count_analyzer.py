@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import json
-import sys
 from collections import defaultdict
 
 if __name__ == '__main__':
@@ -32,5 +31,5 @@ if __name__ == '__main__':
     for (user_id, followings_number) in followings.items():
         cats[int(followings_number / cat_length) * cat_length].append(user_names[user_id])
 
-    print(json.dumps(dict({"all": average_all, "by_cluster": average_by_cluster, "by_number": dict((key, len(cats[key])) for key in sorted(cats, reverse = True))}), indent = 4))
-
+    print(json.dumps(dict({"all": average_all, "by_cluster": average_by_cluster, "by_number": dict((key, len(cats[key]))
+                     for key in sorted(cats, reverse=True))}), indent=4))

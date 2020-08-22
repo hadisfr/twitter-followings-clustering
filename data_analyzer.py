@@ -19,8 +19,9 @@ def make_adjacency_matrix(graph):
     return [[j in graph.neighbors(i) for j in graph.nodes()] for i in graph.nodes()]
 
 
-def translate_keys_from_ids_to_names(dictionary, users, reverse = False):
-    return dict((users[user_id], dictionary[user_id]) for user_id in sorted(dictionary, key = dictionary.get, reverse = reverse))
+def translate_keys_from_ids_to_names(dictionary, users, reverse=False):
+    return dict((users[user_id], dictionary[user_id]) for user_id in
+                sorted(dictionary, key=dictionary.get, reverse=reverse))
 
 
 def convert_dict_to_grpah(dictionary):
@@ -33,7 +34,8 @@ def convert_dict_to_grpah(dictionary):
 
 
 def get_color_code(color_secret):
-    color_array = ["B22222", "000080", "00BFFF", "FF1493", "800080", "ADFF2F", "228B22", "C0C0C0", "556B2F", "FF4500", "FFFF00"]
+    color_array = ["B22222", "000080", "00BFFF", "FF1493", "800080", "ADFF2F", "228B22", "C0C0C0", "556B2F", "FF4500",
+                   "FFFF00"]
     if color_secret < len(color_array):
         color = "#" + color_array[color_secret]
     else:
@@ -42,7 +44,7 @@ def get_color_code(color_secret):
     return color
 
 
-def draw_graph(graph, position, title = "", labels = None, partition_of_node = None):
+def draw_graph(graph, position, title="", labels=None, partition_of_node=None):
     plt.figure()
     plt.axis("off")
 
@@ -58,10 +60,10 @@ def draw_graph(graph, position, title = "", labels = None, partition_of_node = N
 
     for partition in nodes_of_partition:
         color = get_color_code(partition + 2)
-        nx.draw_networkx_nodes(graph, position, nodes_of_partition[partition], 100, color, alpha = 0.8)
-    nx.draw_networkx_edges(graph, position, alpha = 0.5, edge_color = "#808080")
+        nx.draw_networkx_nodes(graph, position, nodes_of_partition[partition], 100, color, alpha=0.8)
+    nx.draw_networkx_edges(graph, position, alpha=0.5, edge_color="#808080")
     if labels:
-        nx.draw_networkx_labels(graph, position, labels, font_size = 5, font_color = [0, 0, 0])
+        nx.draw_networkx_labels(graph, position, labels, font_size=5, font_color=[0, 0, 0])
     if title:
         plt.title(title)
 
@@ -71,11 +73,11 @@ def draw_socres_plot(scores):
     ax = plt.subplot(1, 1, 1)
     ax.grid(True)
     ax.set_xticks([i + 2 for i in range(len(scores))])
-    ax.plot([i + 2 for i in range(len(scores))], scores, marker = "o")
-    plt.show()    
+    ax.plot([i + 2 for i in range(len(scores))], scores, marker="o")
+    plt.show()
 
 
-def cluster_grpah(graph, kClusters = 2, position = None, methode_name = None, show_visualized = True, adjacency_matrix = None):
+def cluster_grpah(graph, kClusters=2, position=None, methode_name=None, show_visualized=True, adjacency_matrix=None):
     clusters = defaultdict(list)
     if not adjacency_matrix:
         adjacency_matrix = make_adjacency_matrix(graph)
@@ -88,7 +90,7 @@ def cluster_grpah(graph, kClusters = 2, position = None, methode_name = None, sh
     for (clusterer_name, clusterer) in clusterers.items():
         if methode_name and clusterer_name != methode_name:
             continue
-        
+
         if clusterer_name == "Affinity":
             clustering_result = clusterer[1]
         else:
@@ -101,18 +103,21 @@ def cluster_grpah(graph, kClusters = 2, position = None, methode_name = None, sh
     return (clusters, score)
 
 
-def extract_importanat_users(graph, users, reverse = False, methode_name = None):
+def extract_importanat_users(graph, users, reverse=False, methode_name=None):
     important_users_extractors = {
         "deggree": lambda g: nx.degree_centrality(g),
-        "closeness": lambda g: nx.closeness_centrality(g), # indicates that the user listens to how many users' tweets immediatey
-        "reverse_closeness": lambda g: nx.closeness_centrality(g.reverse(copy = True)), # indicates that how many users immediatey listen the user's tweets
+        # indicates that the user listens to how many users' tweets immediatey
+        "closeness": lambda g: nx.closeness_centrality(g),
+        # indicates that how many users immediatey listen the user's tweets
+        "reverse_closeness": lambda g: nx.closeness_centrality(g.reverse(copy=True)),
         "betweenness": lambda g: nx.betweenness_centrality(g)
     }
     important_users = {}
     for important_users_extractor in important_users_extractors:
         if methode_name and important_users_extractor != methode_name:
             continue
-        important_users[important_users_extractor] = translate_keys_from_ids_to_names(important_users_extractors[important_users_extractor](graph), users, reverse)
+        important_users[important_users_extractor] = translate_keys_from_ids_to_names(
+            important_users_extractors[important_users_extractor](graph), users, reverse)
     return important_users
 
 
@@ -122,7 +127,7 @@ if __name__ == '__main__':
     followings = dict((int(key), followings[key]) for key in followings.keys())
     graph = convert_dict_to_grpah(followings)
 
-    print("@%s" % user_name, file = sys.stderr)
+    print("@%s" % user_name, file=sys.stderr)
     if gui:
         position = nx.spring_layout(graph)
         draw_graph(graph, position, "@" + user_name, users)
@@ -134,18 +139,17 @@ if __name__ == '__main__':
         scores = []
         adjacency_matrix = make_adjacency_matrix(graph)
         for k in range(clusters_number - 2):
-            print("k = %d" % (k + 2), end = ",\t", file = sys.stderr)
+            print("k = %d" % (k + 2), end=",\t", file=sys.stderr)
             sys.stderr.flush()
-            (clusters, score) = cluster_grpah(graph, k + 2, methode_name = "Agglomerative", show_visualized = False, adjacency_matrix = adjacency_matrix)
-            print("score = %f" % score, file = sys.stderr)
+            (clusters, score) = cluster_grpah(graph, k + 2, methode_name="Agglomerative", show_visualized=False,
+                                              adjacency_matrix=adjacency_matrix)
+            print("score = %f" % score, file=sys.stderr)
             sys.stderr.flush()
             scores.append(score)
         draw_socres_plot(scores)
 
     else:
-        (clusters, score) = cluster_grpah(graph, clusters_number, position, methode_name = "Spectral", show_visualized = gui)
-        important_users = extract_importanat_users(graph, users, reverse = True)
-        # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent = 4))
-        print(json.dumps((clusters, important_users), indent = 4))
-    
-
+        clusters, score = cluster_grpah(graph, clusters_number, position, methode_name="Spectral", show_visualized=gui)
+        important_users = extract_importanat_users(graph, users, reverse=True)
+        # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent=4))
+        print(json.dumps((clusters, important_users), indent=4))
