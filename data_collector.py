@@ -8,8 +8,8 @@ import sys
 import time
 
 
-from keys import *
-from data_collector_config import *
+from keys import consumer_secret, consumer_key, access_token, access_token_secret
+from data_collector_config import levels, user_name, max_followings_filter
 
 clear_string = "          "
 sleep_duration_seconds = 62 * 2.5  # second
@@ -127,12 +127,12 @@ def translate_followings_db_ids_to_names(followings, users):
 
 if __name__ == '__main__':
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth, wait_on_rate_limit=True)
 
     if user_name:
         user = api.get_user(user_name)
     else:
+        auth.set_access_token(access_token, access_token_secret)
         user = api.me()
 
     print("@%s (%s) :\t%d following(s)\n" % (user.screen_name, user.name, user.friends_count), file=sys.stderr)

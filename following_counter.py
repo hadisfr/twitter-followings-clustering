@@ -6,7 +6,7 @@ import json
 import sys
 
 
-from keys import *
+from keys import consumer_key, consumer_secret
 
 
 if __name__ == '__main__':
@@ -14,7 +14,6 @@ if __name__ == '__main__':
     users = dict((int(key), users[key]) for key in users.keys())
 
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth, wait_on_rate_limit=True)
 
     followings = dict()
