@@ -132,6 +132,8 @@ if __name__ == '__main__':
     followings = dict((int(key), followings[key]) for key in followings.keys())
     graph = convert_dict_to_grpah(followings)
 
+    nx.write_graphml(graph, "followings.graphml")
+
     print("@%s" % user_name, file=sys.stderr)
     if gui:
         position = nx.spring_layout(graph)
