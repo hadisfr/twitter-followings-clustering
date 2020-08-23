@@ -97,13 +97,13 @@ def cluster_grpah(graph, kClusters=2, position=None, methode_name=None, show_vis
             clustering_result = clusterer.fit_predict(adjacency_matrix)
         score = metrics.silhouette_score(adjacency_matrix, clustering_result)
         clusters[clusterer_name] = [
-            [users[graph.nodes()[i]] for i in range(len(clustering_result)) if clustering_result[i] == j]
+            [users[list(graph.nodes().keys())[i]] for i in range(len(clustering_result)) if clustering_result[i] == j]
             for j in range(len(set(clustering_result)))
         ]
         if show_visualized:
             draw_graph(graph, position, "@%s : %s" % (user_name, clusterer_name) +
                        [" (%d)" % kClusters, ""][clusterer_name == "Affinity"], users,
-                       dict((graph.nodes()[i], clustering_result[i]) for i in range(len(graph.nodes()))))
+                       dict((list(graph.nodes().keys())[i], clustering_result[i]) for i in range(len(graph.nodes()))))
             plt.show()
     return (clusters, score)
 
