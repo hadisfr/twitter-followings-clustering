@@ -96,6 +96,10 @@ def cluster_grpah(graph, kClusters=2, position=None, methode_name=None, show_vis
         else:
             clustering_result = clusterer.fit_predict(adjacency_matrix)
         score = metrics.silhouette_score(adjacency_matrix, clustering_result)
+
+        nx.set_node_attributes(graph, {list(graph.nodes().keys())[i]: clustering_result[i]
+                               for i in range(len(clustering_result))}, "%s_cluster" % clusterer_name)
+
         clusters[clusterer_name] = [
             [users[list(graph.nodes().keys())[i]] for i in range(len(clustering_result)) if clustering_result[i] == j]
             for j in range(len(set(clustering_result)))
@@ -132,8 +136,6 @@ if __name__ == '__main__':
     followings = dict((int(key), followings[key]) for key in followings.keys())
     graph = convert_dict_to_grpah(followings)
 
-    nx.write_graphml(nx.relabel_nodes(graph, users), "followings.graphml")
-
     print("@%s" % user_name, file=sys.stderr)
     if gui:
         position = nx.spring_layout(graph)
@@ -160,3 +162,5 @@ if __name__ == '__main__':
         important_users = extract_importanat_users(graph, users, reverse=True)
         # print(json.dumps(translate_followings_db_ids_to_names(followings, users), indent=4))
         print(json.dumps((clusters, important_users), indent=4))
+
+    nx.write_graphml(nx.relabel_nodes(graph, users), "followings.graphml")
