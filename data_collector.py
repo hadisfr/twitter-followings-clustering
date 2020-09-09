@@ -56,8 +56,8 @@ def collect_followings_relations(starting_user_id, max_level, tweepy_api):
                         followings_number = tweepy_api.get_user(following).friends_count
                     except Exception as ex:
                         print("\n%r" % (ex), file=sys.stderr)
+                    followings[user].append(following)
                     if followings_number < max_followings_filter:
-                        followings[user].append(following)
                         permitted_user_followings.append(following)
             new_stage = new_stage.union(set(permitted_user_followings))
         stage = stage.union(last_stage)
