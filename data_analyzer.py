@@ -133,7 +133,8 @@ def extract_importanat_users(graph, users, reverse=False, methode_name=None):
 if __name__ == '__main__':
     (user_name, users, followings) = json.loads(input())
     users = dict((int(key), users[key]) for key in users.keys())
-    followings = dict((int(key), followings[key]) for key in followings.keys())
+    followings = dict((int(key), [following for following in followings[key] if following in users])
+                      for key in followings.keys())
     graph = convert_dict_to_grpah(followings)
 
     print("@%s" % user_name, file=sys.stderr)
